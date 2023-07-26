@@ -16,6 +16,7 @@ def run_bot():
         print("HAIII")
         #synced = await tree.sync()
         #print(f"Synced {len(synced)} commands")
+        await settings.updateEmojiList()
     
     @client.event
     async def on_message(message):
@@ -35,6 +36,22 @@ def run_bot():
         f.close()
         await settings.updateEmojiList()
         await interaction.response.send_message("Updated List")
+
+    @tree.command(name="bearflood", description="floods a message with bears, run in same channel as message")
+    @app_commands.checks.has_permissions(administrator = True)
+    async def bearflood(interaction: discord.Interaction, messageid: str):
+        channel = interaction.channel
+        try:
+            message = await channel.fetch_message(int(messageid))
+            print(message.content)
+        except:
+            await interaction.response.send_message("invalid message id")
+            return
+        await interaction.response.send_message("flooding message")
+        for emoji in settings.bearEmojis:
+            await message.add_reaction(emoji)
+        
+
 
     client.run(settings.TOKEN)
 if __name__ == "__main__":

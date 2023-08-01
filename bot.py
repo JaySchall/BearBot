@@ -1,4 +1,5 @@
 import enum
+import re
 import sys
 import discord
 import sqlite3
@@ -9,6 +10,7 @@ import settings
 bully = False
 con = sqlite3.connect("Queue.sqlite3")
 cur = con.cursor()
+useremojis = {}
 
 class toggle(enum.Enum):
     enable = 1
@@ -28,6 +30,8 @@ def run_bot():
     
     @client.event
     async def on_message(message):
+        if message.author.id in useremojis:
+            await message.add_reaction(useremojis[message.author.id])
         if bully == True and message.author.id == 393827547873280000: #Clair's ID
             if "bear" not in message.author.display_name.lower():
                 await message.author.edit(nick="Resident Bear Clair")
@@ -77,7 +81,24 @@ def run_bot():
         elif toggle.value == 0:
             bully = False
             await interaction.response.send_message("bullying disabled :(", ephemeral=True)
-        await interaction.response.send_message(toggle, ephemeral=True)
+        #await interaction.response.send_message(toggle, ephemeral=True)
+
+    @tree.command(name="setuseremoji", description="sets the auto react for a user")
+    @app_commands.checks.has_permissions(administrator = True)
+    async def setuseremoji(interaction: discord.Interaction, userid: str, emoji: str):
+        guild = interaction.guild
+        try:
+            userid = int(userid)
+            user = client.get_user(userid)
+        except:
+            await interaction.response.send_message("invalid user id")
+            return
+        custom_emojis = re.findall(r'<a{0,1}:\w*:\d*>', emoji)
+        if len(custom_emojis) == 0:
+            await interaction.response.send_message("No emoji found")
+            return
+        useremojis[userid] = custom_emojis[0]
+        await interaction.response.send_message("set reaction to " + custom_emojis[0])
 
 
     client.run(settings.TOKEN)

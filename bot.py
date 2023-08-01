@@ -1,10 +1,18 @@
+import enum
 import sys
 import discord
-import os
+import sqlite3
 from discord import app_commands
 import random
 import settings
 
+bully = False
+con = sqlite3.connect("Queue.sqlite3")
+cur = con.cursor()
+
+class toggle(enum.Enum):
+    enable = 1
+    disable = 0
 def run_bot():
     intents = discord.Intents.default()
     client = discord.Client(intents=intents)
@@ -20,7 +28,7 @@ def run_bot():
     
     @client.event
     async def on_message(message):
-        if message.author.id == 393827547873280000: #Clair's ID
+        if bully == True and message.author.id == 393827547873280000: #Clair's ID
             if "bear" not in message.author.display_name.lower():
                 await message.author.edit(nick="Resident Bear Clair")
             emojiNumber = random.randint(0,len(settings.bearEmojis) - 1)
@@ -56,7 +64,20 @@ def run_bot():
         await interaction.response.send_message("flooding message")
         for emoji in settings.bearEmojis:
             await message.add_reaction(emoji)
-        
+    
+    @tree.command(name="bullyclair", description="toggles the real features")
+    @app_commands.checks.has_permissions(administrator = True)
+    async def bully(interaction: discord.Interaction, toggle: toggle):
+        if interaction.user.id == 393827547873280000:
+            await interaction.response.send_message("Sorry not for Clair")
+            return
+        if toggle.value == 1:
+            bully = True
+            await interaction.response.send_message("bullying enabled >:)", ephemeral=True)
+        elif toggle.value == 0:
+            bully = False
+            await interaction.response.send_message("bullying disabled :(", ephemeral=True)
+        await interaction.response.send_message(toggle, ephemeral=True)
 
 
     client.run(settings.TOKEN)

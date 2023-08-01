@@ -20,10 +20,16 @@ def run_bot():
     
     @client.event
     async def on_message(message):
-        if message.author.id == 209440277981560833: #Not Clair's ID
+        if message.author.id == 393827547873280000: #Clair's ID
+            if "bear" not in message.author.display_name.lower():
+                await message.author.edit(nick="Resident Bear Clair")
             emojiNumber = random.randint(0,len(settings.bearEmojis) - 1)
-            await message.add_reaction(settings.bearEmojis[emojiNumber])
-            print("reacted")
+            try:
+                await message.add_reaction(settings.bearEmojis[emojiNumber])
+                print("reacted")
+            except:
+                await message.channel.send(settings.bearEmojis[emojiNumber])
+                print("blocked, sent a msg instead")
     
     @tree.command(name="updateemojis", description="updates the list of emojis")
     @app_commands.checks.has_permissions(administrator = True)
